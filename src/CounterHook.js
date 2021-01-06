@@ -1,13 +1,22 @@
-import React from "react";
+import React, {useState} from "react";
 
 function CounterHook({title}){
+    const [counter, setCounter] = useState(0);
+
+    const increase = () =>{
+        setCounter(counter + 1);
+    }
+
+    const decrease = () =>{
+        setCounter(counter - 1);
+    }
     return (
         <>
             <div>
                 <h1>{title}</h1>
-                <button>+</button>
-                <h3>0</h3>
-                <button>-</button>
+                <button onClick={increase}>+</button>
+                <h3>{counter}</h3>
+                <button onClick={decrease}>-</button>
             </div>
         </>
     )
