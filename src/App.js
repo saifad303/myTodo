@@ -1,10 +1,24 @@
+import logo from './logo.svg';
 import './App.css';
-import CounterHook from "./CounterHook";
 
 function App() {
   return (
     <div className="App">
-      <CounterHook title={'Counter app headline.'}/>
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          <h1>I forgot to add a headline.</h1>
+          This is my counter app
+        </p>
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn React
+        </a>
+      </header>
     </div>
   );
 }
