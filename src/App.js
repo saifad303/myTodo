@@ -7,6 +7,7 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
+          <h1>I forgot to add a headline.</h1>
           This is my counter app
         </p>
         <a
