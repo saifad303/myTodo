@@ -1,102 +1,82 @@
-import React, {useEffect, useState} from 'react'
-import firebase from 'firebase'
-import Form from './Form'
+import React, { useEffect, useState, useMemo } from "react";
+import { database } from "../firebase";
+import { useTable, useGlobalFilter } from "react-table";
+import Form from "./Form";
+import { COLUMNS } from "./columns";
+import "./table.css";
 
 function MyList() {
+  let [users, setUsers] = useState([]);
+  const columns = useMemo(() => COLUMNS, []);
 
-    let [todoList, setTodoList] = useState([])
-    let [title, setTitle] = useState();
+  const tableInstence = useTable(
+    {
+      columns: columns,
+      data: users,
+    },
+    useGlobalFilter
+  );
 
-    useEffect(() =>{
-        firebase.database().ref('Todo').on('value', (snap) =>{
-            console.log(snap.val());
-            let todos = snap.val()
-            let fetchedList = []
+  const {
+    getTableBodyProps,
+    getTableProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    state,
+    setGlobalFilter,
+    selectedFlatRows,
+  } = tableInstence;
 
-            for(let id in todos){
-                fetchedList.push({id: id, ...todos[id], editable: false})
-            }
+  const { globalFilter } = state;
 
-            console.log(fetchedList);
+  useEffect(() => {
+    database
+      .ref("User")
+      .orderByChild("id")
+      .on("value", (snap) => {
+        console.log(snap.val());
+        let users = snap.val();
+        let fetchedList = [];
 
-            setTodoList(fetchedList)
-        })
-    },[])
+        for (let id in users) {
+          fetchedList.push({ id: id, ...users[id] });
+        }
 
+        setUsers(fetchedList);
+      });
+  }, []);
 
-    let listEditHandler = (list) => {
-        console.log(list);
-        setTitle(list.title)
-        let newItem = { ...list,  editable: true}
-
-        console.log(newItem);
-
-        let index = todoList.findIndex((item) =>{
-            return item.id === list.id
-        })
-
-        let newList = todoList.filter((item) =>{
-            return item.id !== list.id
-        })
-
-        console.log(newList);
-        console.log('id = ', index);
-
-        newList.splice(index, 0, newItem)
-
-        console.log(newList);
-
-        setTodoList(newList)
-    }
-
-    let editChangeHandler = (e) =>{
-        setTitle(e.target.value)
-    }
-
-    let editSubmitionHandler = (item) =>{
-        console.log(item);
-
-        firebase.database().ref('Todo').child(item.id).update({
-            complete: item.complete,
-            title: title
-        })
-    }
-
-    let deleteHandler = (id) =>{
-        firebase.database().ref('Todo').child(id).remove();
-    }
-
-    return (
-        <div>
-            <Form/>
-            <h1>My List</h1>
-            <hr/>
-            {
-                todoList.map((item, index) => {
-                    return (
-                        <div key={index}>
-                            <fieldset>
-                                {
-                                    item.editable ? (
-                                        <div>
-                                            <input type="text" value={title} onChange={editChangeHandler}/>
-                                            <button onClick={(e) => { e.preventDefault(); editSubmitionHandler(item) }}>submit</button>
-                                        </div>
-                                    ) : (
-                                        <div>
-                                            <p>{item.title}</p>
-                                            <button onClick={(e) => { e.preventDefault(); listEditHandler(item); }}>Edit</button>
-                                            <button style={{marginLeft: '10px'}} onClick={(e) => { e.preventDefault(); deleteHandler(item.id); }}>Delete</button>
-                                        </div>
-                                    )
-                                }
-                            </fieldset>
-                        </div>
-                    )
-                })
-            }
-        </div>
-    )
+  return (
+    <div>
+      <Form />
+      <h1>My List</h1>
+      <hr />
+      <table {...getTableProps()}>
+        <thead>
+          {headerGroups.map((headerGroup) => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column) => (
+                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {rows.map((row) => {
+            prepareRow(row);
+            return (
+              <tr {...row.getRowProps()}>
+                {row.cells.map((cell) => (
+                  <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
-export default MyList
+export default MyList;
